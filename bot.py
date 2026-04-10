@@ -194,6 +194,12 @@ async def cb_add_to_cart(callback: CallbackQuery):
         return
     add_to_cart(callback.from_user.id, p)
     await callback.answer(f"✅ {p['name']} добавлен в корзину!")
+    # Сразу показываем корзину
+    cart = get_cart(callback.from_user.id)
+    total = sum(item["price"] for item in cart)
+    items_text = "\n".join([f"• {item['name']} — {item['price']} руб." for item in cart])
+    text = f"🛒 *Ваша корзина:*\n\n{items_text}\n\n💰 *Итого: {total} руб.*"
+    await callback.message.edit_text(text, parse_mode="Markdown", reply_markup=cart_kb())
 
 # ========================
 # 🛒 КОРЗИНА
