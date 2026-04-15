@@ -18,6 +18,7 @@ ADMIN_IDS = [int(x) for x in os.getenv("ADMIN_IDS", "").split(",") if x.strip()]
 COURIER_GROUP_ID = int(os.getenv("COURIER_GROUP_ID", "0"))
 PAYMENT_DETAILS = os.getenv("PAYMENT_DETAILS", "Реквизиты не настроены")
 PRODUCTS_FILE = "products.json"
+DELIVERY_FEE = 250
 # ========================
 
 bot = Bot(token=BOT_TOKEN)
@@ -198,7 +199,12 @@ async def cb_add_to_cart(callback: CallbackQuery):
     cart = get_cart(callback.from_user.id)
     total = sum(item["price"] for item in cart)
     items_text = "\n".join([f"• {item['name']} — {item['price']} руб." for item in cart])
-    text = f"🛒 *Ваша корзина:*\n\n{items_text}\n\n💰 *Итого: {total} руб.*"
+    text = (
+        f"🛒 *Ваша корзина:*\n\n"
+        f"{items_text}\n"
+        f"• 🚴 Доставка — {DELIVERY_FEE} руб.\n\n"
+        f"💰 *Итого: {total + DELIVERY_FEE} руб.*"
+    )
     await callback.message.edit_text(text, parse_mode="Markdown", reply_markup=cart_kb())
 
 # ========================
@@ -212,7 +218,12 @@ async def cb_cart(callback: CallbackQuery):
         return
     total = sum(item["price"] for item in cart)
     items_text = "\n".join([f"• {item['name']} — {item['price']} руб." for item in cart])
-    text = f"🛒 *Ваша корзина:*\n\n{items_text}\n\n💰 *Итого: {total} руб.*"
+    text = (
+        f"🛒 *Ваша корзина:*\n\n"
+        f"{items_text}\n"
+        f"• 🚴 Доставка — {DELIVERY_FEE} руб.\n\n"
+        f"💰 *Итого: {total + DELIVERY_FEE} руб.*"
+    )
     await callback.message.edit_text(text, parse_mode="Markdown", reply_markup=cart_kb())
 
 @dp.callback_query(F.data == "clear_cart")
@@ -257,8 +268,9 @@ async def order_delivery_time(message: Message, state: FSMContext):
     await state.set_state(OrderState.payment)
     await message.answer(
         f"💳 *Оформление заказа — шаг 3/3*\n\n"
-        f"*Ваш заказ:*\n{items_text}\n\n"
-        f"💰 *К оплате: {total} руб.*\n\n"
+        f"*Ваш заказ:*\n{items_text}\n"
+        f"• 🚴 Доставка — {DELIVERY_FEE} руб.\n\n"
+        f"💰 *К оплате: {total + DELIVERY_FEE} руб.*\n\n"
         f"Переведите сумму по реквизитам:\n"
         f"`{PAYMENT_DETAILS}`\n\n"
         f"После перевода нажмите кнопку ниже 👇",
@@ -281,8 +293,9 @@ async def cb_paid(callback: CallbackQuery, state: FSMContext):
         f"👤 Клиент: {user.full_name} ({username})\n"
         f"📍 Адрес: {data.get('address', '—')}\n"
         f"⏰ Время: {data.get('delivery_time', '—')}\n\n"
-        f"🛍 <b>Состав заказа:</b>\n{items_text}\n\n"
-        f"💰 Сумма: <b>{total} руб.</b>\n"
+        f"🛍 <b>Состав заказа:</b>\n{items_text}\n"
+        f"• 🚴 Доставка — {DELIVERY_FEE} руб.\n\n"
+        f"💰 Сумма: <b>{total + DELIVERY_FEE} руб.</b>\n"
         f"✅ Оплата подтверждена клиентом"
     )
 
