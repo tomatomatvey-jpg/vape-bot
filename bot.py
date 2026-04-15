@@ -273,21 +273,21 @@ async def cb_paid(callback: CallbackQuery, state: FSMContext):
     total = sum(item["price"] for item in cart)
     items_text = "\n".join([f"• {item['name']} — {item['price']} руб." for item in cart])
     user = callback.from_user
-    username = f"@{user.username}" if user.username else f"[{user.full_name}](tg://user?id={user.id})"
+    username = f"@{user.username}" if user.username else f'<a href="tg://user?id={user.id}">{user.full_name}</a>'
 
     # Сообщение в группу курьеров
     courier_msg = (
-        f"🛵 *НОВЫЙ ЗАКАЗ*\n\n"
+        f"🛵 <b>НОВЫЙ ЗАКАЗ</b>\n\n"
         f"👤 Клиент: {user.full_name} ({username})\n"
         f"📍 Адрес: {data.get('address', '—')}\n"
         f"⏰ Время: {data.get('delivery_time', '—')}\n\n"
-        f"🛍 *Состав заказа:*\n{items_text}\n\n"
-        f"💰 Сумма: *{total} руб.*\n"
+        f"🛍 <b>Состав заказа:</b>\n{items_text}\n\n"
+        f"💰 Сумма: <b>{total} руб.</b>\n"
         f"✅ Оплата подтверждена клиентом"
     )
 
     try:
-        await bot.send_message(COURIER_GROUP_ID, courier_msg, parse_mode="Markdown")
+        await bot.send_message(COURIER_GROUP_ID, courier_msg, parse_mode="HTML")
     except Exception as e:
         print(f"Ошибка отправки в группу курьеров: {e}")
 
