@@ -17,7 +17,7 @@ BOT_TOKEN = os.getenv("BOT_TOKEN", "")
 ADMIN_IDS = [int(x) for x in os.getenv("ADMIN_IDS", "").split(",") if x.strip()]
 COURIER_GROUP_ID = int(os.getenv("COURIER_GROUP_ID", "0"))
 PAYMENT_DETAILS = os.getenv("PAYMENT_DETAILS", "Реквизиты не настроены")
-PRODUCTS_FILE = "products.json"
+PRODUCTS_FILE = "/app/data/products.json"
 DELIVERY_FEE = 250
 # ========================
 
@@ -26,6 +26,7 @@ dp = Dispatcher(storage=MemoryStorage())
 
 # --- Работа с каталогом ---
 def load_products():
+    os.makedirs(os.path.dirname(PRODUCTS_FILE), exist_ok=True)
     if os.path.exists(PRODUCTS_FILE):
         with open(PRODUCTS_FILE, "r", encoding="utf-8") as f:
             return json.load(f)
